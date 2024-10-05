@@ -6,12 +6,13 @@ pipeline {
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
-    parameters {
-        choice(name: 'environment', choices: ['dev', 'prod'], description: 'Select environment')
-    }
+    // parameters {
+    //     choice(name: 'environment', choices: ['dev', 'prod'], description: 'Select environment')
+    // }
     environment {
         // Initialize appVersion as an empty string
         appVersion = ''
+        nexusUrl='nexus.vigneshdev.online'
     }
     stages {
         stage('Read the Version') {
@@ -43,6 +44,28 @@ pipeline {
                 """
             }
         }
+        stage('Nexus Artifact Upload'){
+            steps{
+                script{
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: "${nexusUrl}",
+                        groupId: 'com.expense',
+                        version: "${appVersion}",
+                        repository: "backend",
+                        credentialsId: 'nexus-auth',
+                        artifacts: [
+                            [artifactId: "backend" ,
+                            classifier: '',
+                            file: "backend-" + "${appVersion}" + '.zip',
+                            type: 'zip']
+                        ]
+                    )
+                }
+            }
+        } 
+
     }
     post {
         always {
