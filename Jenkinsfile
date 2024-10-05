@@ -12,7 +12,8 @@ pipeline {
     environment {
         // Initialize appVersion as an empty string
         appVersion = ''
-        nexusUrl='nexus.vigneshdev.online'
+        nexusUrl='nexus.vigneshdev.online:8081'
+
     }
     stages {
         stage('Read the Version') {
