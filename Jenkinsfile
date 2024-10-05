@@ -6,9 +6,9 @@ pipeline {
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
-    // parameters {
-    //     choice(name: 'environment', choices: ['dev', 'prod'], description: 'Select environment')
-    // }
+    parameters{
+        booleanParam(name: 'deploy', defaultValue: false, description: 'Toggle this value')
+    }
     environment {
         // Initialize appVersion as an empty string
         appVersion = ''
@@ -63,6 +63,21 @@ pipeline {
                             type: 'zip']
                         ]
                     )
+                }
+            }
+        } 
+        stage('Deploy'){
+            when{
+                expression{
+                    params.deploy
+                }
+            }
+            steps{
+                script{
+                    def params = [
+                        string(name: 'appVersion', value: "${appVersion}")
+                    ]
+                    build job: 'backend-deploy', parameters: params, wait: false
                 }
             }
         } 
