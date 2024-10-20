@@ -8,7 +8,7 @@ metadata:
     project: expense
     tier: app
 spec:
-  replicas: { { .Values.deployment.replicas } } # Corrected Helm template value (no extra spaces)
+  replicas: 2 # Corrected Helm template value (no extra spaces)
   selector:
     matchLabels:
       component: backend
