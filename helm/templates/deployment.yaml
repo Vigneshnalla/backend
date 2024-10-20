@@ -8,7 +8,7 @@ metadata:
     project: expense
     tier: app
 spec:
-  replicas: { { .Values.deployment.replicas } } # Corrected without spaces
+  replicas: { { .Values.deployment.replicas } } # Corrected Helm template value (no extra spaces)
   selector:
     matchLabels:
       component: backend
@@ -24,7 +24,7 @@ spec:
       containers:
         - name: backend
           imagePullPolicy: Always
-          image: 324037294108.dkr.ecr.us-east-1.amazonaws.com/expense-backend:{{ .Values.deployment.imageVersion }} # Corrected without spaces
+          image: 324037294108.dkr.ecr.us-east-1.amazonaws.com/expense-backend:{{ .Values.deployment.imageVersion }} # Corrected Helm template value (no extra spaces)
           envFrom:
             - configMapRef:
                 name: backend
