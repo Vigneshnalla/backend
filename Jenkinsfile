@@ -5,47 +5,85 @@ pipeline {
     options {
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
+        ansiColor('xterm')
     }
     parameters{
         booleanParam(name: 'deploy', defaultValue: false, description: 'Toggle this value')
     }
-    environment {
-        // Initialize appVersion as an empty string
-        appVersion = ''
-        nexusUrl='nexus.vigneshdev.online:8081'
-
+    environment{
+        def appVersion = '' //variable declaration
+        nexusUrl = 'nexus.vigneshdev.online:8081'
+        region = "us-east-1"
+        account_id = "315069654700"
     }
     stages {
-        stage('Read the Version') {
-            steps {
-                script {
-                    // Read the JSON file and extract the version
+        stage('read the version'){
+            steps{
+                script{
                     def packageJson = readJSON file: 'package.json'
-                    appVersion = packageJson.version // Fixed typo from 'versioin' to 'version'
-                    echo "Application version: ${appVersion}" // Use Groovy string interpolation
+                    appVersion = packageJson.version
+                    echo "application version: $appVersion"
                 }
             }
         }
-
         stage('Install Dependencies') {
             steps {
-                sh """
+               sh """
                 npm install
                 ls -ltr
-                echo "Application version: ${appVersion}" // Use Groovy string interpolation
-                """
+                echo "application version: $appVersion"
+               """
             }
         }
-
-        stage('Build') { // Fixed typo from 'BUID' to 'Build'
-            steps {
+        stage('Build'){
+            steps{
                 sh """
                 zip -q -r backend-${appVersion}.zip * -x Jenkinsfile -x backend-${appVersion}.zip
                 ls -ltr
                 """
             }
         }
-        stage('Nexus Artifact Upload'){
+        stage('Docker build'){
+            steps{
+                sh """
+                    docker build -t backend:${appVersion} .
+                """
+            }
+        }
+
+        stage('Deploy'){
+            steps{
+                sh """
+                    aws eks update-kubeconfig --region us-east-1 --name expense-dev
+                    cd helm
+                    sed -i 's/IMAGE_VERSION/${appVersion}/g' values.yaml
+                    helm upgrade backend .
+                """
+            }
+        }
+        
+        /* stage('Sonar Scan'){
+            environment {
+                scannerHome = tool 'sonar-6.0' //referring scanner CLI
+            }
+            steps {
+                script {
+                    withSonarQubeEnv('sonar-6.0') { //referring sonar server
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+              timeout(time: 30, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+              }
+            }
+        } */
+
+        /* stage('Nexus Artifact Upload'){
             steps{
                 script{
                     nexusArtifactUploader(
@@ -65,8 +103,8 @@ pipeline {
                     )
                 }
             }
-        } 
-        stage('Deploy'){
+        } */
+        /* stage('Deploy'){
             when{
                 expression{
                     params.deploy
@@ -80,13 +118,18 @@ pipeline {
                     build job: 'backend-deploy', parameters: params, wait: false
                 }
             }
-        } 
-
+        } */
     }
-    post {
-        always {
-            echo "I always run"
-            deleteDir() // Fixed method call from 'delete dir)()' to 'deleteDir()'
+    post { 
+        always { 
+            echo 'I will always say Hello again!'
+            deleteDir()
+        }
+        success { 
+            echo 'I will run when pipeline is success'
+        }
+        failure { 
+            echo 'I will run when pipeline is failure'
         }
     }
 }
