@@ -4,4 +4,4 @@ metadata:
   name: backend
   namespace: expense
 data:
-  DB_HOST: db.vigneshdev.online
+  DB_HOST: daa.vigneshdev.online
