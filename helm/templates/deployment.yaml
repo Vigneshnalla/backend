@@ -1,9 +1,8 @@
-kind: Deployment
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: backend
   namespace: expense
-  # these labels are deployment related labels
   labels:
     component: backend
     project: expense
@@ -15,7 +14,6 @@ spec:
       component: backend
       project: expense
       tier: app
-  # pod definition
   template:
     metadata:
       labels:
@@ -25,8 +23,17 @@ spec:
     spec:
       containers:
         - name: backend
+          image: 324037294108.dkr.ecr.us-east-1.amazonaws.com/expense-backend:<version> # Specify your image version here
           imagePullPolicy: Always
-          image: 324037294108.dkr.ecr.us-east-1.amazonaws.com/expense-backend:{{ .Values.deployment.imageVersion }}
           envFrom:
             - configMapRef:
                 name: backend
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "256Mi" # Minimum memory requested
+              cpu: "100m" # Minimum CPU requested
+            limits:
+              memory: "512Mi" # Maximum memory limit
+              cpu: "200m" # Maximum CPU limit
